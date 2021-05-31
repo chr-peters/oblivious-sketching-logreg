@@ -4,6 +4,8 @@
 #
 #    pip-compile
 #
+joblib==1.0.1
+    # via scikit-learn
 llvmlite==0.36.0
     # via numba
 numba==0.53.1
@@ -11,9 +13,16 @@ numba==0.53.1
 numpy==1.20.3
     # via
     #   numba
+    #   scikit-learn
     #   scipy
-scipy==1.6.3
+scikit-learn==0.24.2
     # via oblivious-sketching-logreg (setup.py)
+scipy==1.6.3
+    # via
+    #   oblivious-sketching-logreg (setup.py)
+    #   scikit-learn
+threadpoolctl==2.1.0
+    # via scikit-learn
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
