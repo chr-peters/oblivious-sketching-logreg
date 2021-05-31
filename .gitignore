@@ -4,3 +4,4 @@ venv/
 .coverage
 .ipynb_checkpoints/
 *.egg-info/
+htmlcov/
