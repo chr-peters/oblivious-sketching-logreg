@@ -4,5 +4,5 @@ setup(
     name="oblivious-sketching-logreg",
     version="0.1.0",
     packages=find_packages(),
-    install_requires=["numba", "scikit-learn", "scipy"],
+    install_requires=["numba", "pandas", "scikit-learn", "scipy"],
 )
