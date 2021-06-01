@@ -87,10 +87,12 @@ def logistic_likelihood_grad(
     return -1 * (grad_weights.dot(Z))
 
 
-def optimize(Z, w, block_size=None, k=None, max_len=None):
+def optimize(Z, w=None, block_size=None, k=None, max_len=None):
     """
     Optimizes a weighted instance of logistic regression.
     """
+    if w is None:
+        w = np.ones(Z.shape[0])
 
     def objective_function(theta):
         return logistic_likelihood(
