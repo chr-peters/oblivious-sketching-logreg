@@ -37,7 +37,15 @@ def test_uniform_sampling_experiment(tmp_path):
     run_unique, run_counts = np.unique(df["run"], return_counts=True)
     assert_array_equal(run_unique, [1, 2, 3])
     assert_array_equal(run_counts, [3, 3, 3])
+
     assert np.sum(df["ratio"].isna()) == 0
+    assert np.all(df["ratio"] >= 1)
+
+    assert np.sum(df["sampling_time_s"].isna()) == 0
+    assert np.sum(df["total_time_s"].isna()) == 0
+
+    assert np.all(df["sampling_time_s"] > 0)
+    assert np.all(df["total_time_s"] > 0)
 
 
 def test_uniform_sampling_reduction(tmp_path):

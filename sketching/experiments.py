@@ -1,4 +1,5 @@
 import abc
+from time import perf_counter
 
 import numpy as np
 import pandas as pd
@@ -33,10 +34,23 @@ class BaseExperiment(abc.ABC):
 
         results = []
         for cur_config in self.get_config_grid():
+            start_time = perf_counter()
+
             reduced_matrix, weights = self.get_reduced_matrix_and_weights(cur_config)
+            sampling_time = perf_counter() - start_time
+
             cur_beta_opt = optimizer.optimize(Z=reduced_matrix, w=weights).x
+            total_time = perf_counter() - start_time
+
             cur_ratio = objective_function(cur_beta_opt) / f_opt
-            results.append({**cur_config, "ratio": cur_ratio})
+            results.append(
+                {
+                    **cur_config,
+                    "ratio": cur_ratio,
+                    "sampling_time_s": sampling_time,
+                    "total_time_s": total_time,
+                }
+            )
 
         df = pd.DataFrame(results)
         df.to_csv(self.results_filename, index=False)
