@@ -6,6 +6,7 @@ import pandas as pd
 
 from . import optimizer
 from .datasets import Dataset
+from .l2s_sampling import l2s_sampling
 from .sketch import Sketch
 
 _rng = np.random.default_rng()
@@ -177,3 +178,40 @@ class ObliviousSketchingExperiment(BaseExperiment):
             k=self.cur_kyfan_k,
             max_len=self.cur_kyfan_max_len,
         ).x
+
+
+class L2SExperiment(BaseExperiment):
+    def __init__(
+        self,
+        dataset: Dataset,
+        results_filename,
+        min_size,
+        max_size,
+        step_size,
+        num_runs,
+    ):
+        super().__init__(dataset=dataset, results_filename=results_filename)
+        self.min_size = min_size
+        self.max_size = max_size
+        self.step_size = step_size
+        self.num_runs = num_runs
+
+    def get_config_grid(self):
+        grid = []
+        for size in np.arange(
+            start=self.min_size,
+            stop=self.max_size + self.step_size,
+            step=self.step_size,
+        ):
+            for run in range(1, self.num_runs + 1):
+                grid.append({"run": run, "size": size})
+
+        return grid
+
+    def get_reduced_matrix_and_weights(self, config):
+        Z = self.dataset.get_Z()
+        size = config["size"]
+
+        reduced_matrix, weights = l2s_sampling(Z, size=size)
+
+        return reduced_matrix, weights
