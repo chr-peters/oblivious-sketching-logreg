@@ -248,7 +248,7 @@ class SGDExperiment(BaseExperiment):
         return grid
 
     def get_reduced_matrix_and_weights(self, config):
-        # For SGD no reduction is performed
+        # For SGD, no reduction is performed
         return None, None
 
     def optimize(self, reduced_matrix, weights):
