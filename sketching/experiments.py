@@ -13,7 +13,19 @@ _rng = np.random.default_rng()
 
 
 class BaseExperiment(abc.ABC):
-    def __init__(self, dataset: Dataset, results_filename):
+    def __init__(
+        self,
+        num_runs,
+        min_size,
+        max_size,
+        step_size,
+        dataset: Dataset,
+        results_filename,
+    ):
+        self.num_runs = num_runs
+        self.min_size = min_size
+        self.max_size = max_size
+        self.step_size = step_size
         self.dataset = dataset
         self.results_filename = results_filename
 
@@ -21,12 +33,20 @@ class BaseExperiment(abc.ABC):
     def get_reduced_matrix_and_weights(self, config):
         pass
 
-    @abc.abstractmethod
     def get_config_grid(self):
         """
         Returns a list of configurations that are used to run the experiments.
         """
-        pass
+        grid = []
+        for size in np.arange(
+            start=self.min_size,
+            stop=self.max_size + self.step_size,
+            step=self.step_size,
+        ):
+            for run in range(1, self.num_runs + 1):
+                grid.append({"run": run, "size": size})
+
+        return grid
 
     def optimize(self, reduced_matrix, weights):
         return optimizer.optimize(Z=reduced_matrix, w=weights).x
@@ -71,23 +91,14 @@ class UniformSamplingExperiment(BaseExperiment):
         step_size,
         num_runs,
     ):
-        super().__init__(dataset=dataset, results_filename=results_filename)
-        self.min_size = min_size
-        self.max_size = max_size
-        self.step_size = step_size
-        self.num_runs = num_runs
-
-    def get_config_grid(self):
-        grid = []
-        for size in np.arange(
-            start=self.min_size,
-            stop=self.max_size + self.step_size,
-            step=self.step_size,
-        ):
-            for run in range(1, self.num_runs + 1):
-                grid.append({"run": run, "size": size})
-
-        return grid
+        super().__init__(
+            num_runs=num_runs,
+            min_size=min_size,
+            max_size=max_size,
+            step_size=step_size,
+            dataset=dataset,
+            results_filename=results_filename,
+        )
 
     def get_reduced_matrix_and_weights(self, config):
         Z = self.dataset.get_Z()
@@ -113,25 +124,16 @@ class ObliviousSketchingExperiment(BaseExperiment):
         h_max,
         kyfan_percent,
     ):
-        super().__init__(dataset=dataset, results_filename=results_filename)
-        self.min_size = min_size
-        self.max_size = max_size
-        self.step_size = step_size
-        self.num_runs = num_runs
+        super().__init__(
+            num_runs=num_runs,
+            min_size=min_size,
+            max_size=max_size,
+            step_size=step_size,
+            dataset=dataset,
+            results_filename=results_filename,
+        )
         self.h_max = h_max
         self.kyfan_percent = kyfan_percent
-
-    def get_config_grid(self):
-        grid = []
-        for size in np.arange(
-            start=self.min_size,
-            stop=self.max_size + self.step_size,
-            step=self.step_size,
-        ):
-            for run in range(1, self.num_runs + 1):
-                grid.append({"run": run, "size": size})
-
-        return grid
 
     def get_reduced_matrix_and_weights(self, config):
         Z = self.dataset.get_Z()
@@ -190,23 +192,14 @@ class L2SExperiment(BaseExperiment):
         step_size,
         num_runs,
     ):
-        super().__init__(dataset=dataset, results_filename=results_filename)
-        self.min_size = min_size
-        self.max_size = max_size
-        self.step_size = step_size
-        self.num_runs = num_runs
-
-    def get_config_grid(self):
-        grid = []
-        for size in np.arange(
-            start=self.min_size,
-            stop=self.max_size + self.step_size,
-            step=self.step_size,
-        ):
-            for run in range(1, self.num_runs + 1):
-                grid.append({"run": run, "size": size})
-
-        return grid
+        super().__init__(
+            num_runs=num_runs,
+            min_size=min_size,
+            max_size=max_size,
+            step_size=step_size,
+            dataset=dataset,
+            results_filename=results_filename,
+        )
 
     def get_reduced_matrix_and_weights(self, config):
         Z = self.dataset.get_Z()
