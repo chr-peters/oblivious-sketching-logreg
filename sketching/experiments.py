@@ -1,14 +1,17 @@
 import abc
+import logging
 from time import perf_counter
 
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import SGDClassifier
 
-from . import optimizer
+from . import optimizer, settings
 from .datasets import Dataset
 from .l2s_sampling import l2s_sampling
 from .sketch import Sketch
+
+logger = logging.getLogger(settings.LOGGER_NAME)
 
 _rng = np.random.default_rng()
 
@@ -58,8 +61,12 @@ class BaseExperiment(abc.ABC):
         objective_function = optimizer.get_objective_function(Z)
         f_opt = objective_function(beta_opt)
 
+        logger.info("Running experiments...")
+
         results = []
         for cur_config in self.get_config_grid():
+            logger.info(f"Current experimental config: {cur_config}")
+
             start_time = perf_counter()
 
             reduced_matrix, weights = self.get_reduced_matrix_and_weights(cur_config)
@@ -78,8 +85,12 @@ class BaseExperiment(abc.ABC):
                 }
             )
 
+        logger.info(f"Writing results to {self.results_filename}")
+
         df = pd.DataFrame(results)
         df.to_csv(self.results_filename, index=False)
+
+        logger.info("Done.")
 
 
 class UniformSamplingExperiment(BaseExperiment):
