@@ -6,6 +6,7 @@ from sketching.datasets import Covertype_Sklearn, Dataset
 from sketching.experiments import (
     L2SExperiment,
     ObliviousSketchingExperiment,
+    SGDExperiment,
     UniformSamplingExperiment,
 )
 
@@ -141,8 +142,6 @@ def test_l2s_experiment(tmp_path):
 
     df = pd.read_csv(results_filename)
 
-    print(df)
-
     run_unique, run_counts = np.unique(df["run"], return_counts=True)
     assert_array_equal(run_unique, [1, 2, 3])
     assert_array_equal(run_counts, [3, 3, 3])
@@ -174,3 +173,27 @@ def test_l2s_reduction(tmp_path):
         assert cur_matrix.shape[0] == cur_config["size"]
         assert cur_matrix.shape[1] == dataset.get_d() + 1
         assert cur_weights.shape[0] == cur_config["size"]
+
+
+def test_sgd_experiment(tmp_path):
+    dataset = ExampleDataset()
+    results_filename = tmp_path / "results.csv"
+    experiment = SGDExperiment(
+        num_runs=10, dataset=dataset, results_filename=results_filename
+    )
+    experiment.run()
+
+    df = pd.read_csv(results_filename)
+
+    print(df)
+
+    assert_array_equal(df["run"], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+    assert np.sum(df["ratio"].isna()) == 0
+    assert np.all(df["ratio"] >= 1)
+
+    assert np.sum(df["sampling_time_s"].isna()) == 0
+    assert np.sum(df["total_time_s"].isna()) == 0
+
+    assert np.all(df["sampling_time_s"] > 0)
+    assert np.all(df["total_time_s"] > 0)

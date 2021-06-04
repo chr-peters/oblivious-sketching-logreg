@@ -3,6 +3,7 @@ from time import perf_counter
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import SGDClassifier
 
 from . import optimizer
 from .datasets import Dataset
@@ -208,3 +209,48 @@ class L2SExperiment(BaseExperiment):
         reduced_matrix, weights = l2s_sampling(Z, size=size)
 
         return reduced_matrix, weights
+
+
+class SGDExperiment(BaseExperiment):
+    def __init__(
+        self,
+        num_runs,
+        dataset: Dataset,
+        results_filename,
+    ):
+        n = dataset.get_n()
+        super().__init__(
+            num_runs=num_runs,
+            min_size=n,
+            max_size=n,
+            step_size=0,
+            dataset=dataset,
+            results_filename=results_filename,
+        )
+
+    def get_config_grid(self):
+        grid = []
+
+        for run in range(1, self.num_runs + 1):
+            grid.append({"run": run})
+
+        return grid
+
+    def get_reduced_matrix_and_weights(self, config):
+        # For SGD no reduction is performed
+        return None, None
+
+    def optimize(self, reduced_matrix, weights):
+        """Performs a run of stochastic gradient descent."""
+        X = self.dataset.get_X()
+        y = self.dataset.get_y()
+
+        learner = SGDClassifier(
+            loss="log", alpha=0, learning_rate="adaptive", eta0=0.01, max_iter=1
+        )
+
+        learner.partial_fit(X, y, classes=np.unique(y))
+
+        beta_opt = np.concatenate((learner.coef_[0], learner.intercept_))
+
+        return beta_opt
