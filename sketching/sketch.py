@@ -45,3 +45,6 @@ class Sketch:
 
     def get_reduced_matrix(self):
         return self.X_prime
+
+    def get_weights(self):
+        return self.weights
