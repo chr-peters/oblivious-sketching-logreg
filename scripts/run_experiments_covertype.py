@@ -10,7 +10,7 @@ logger = logging.getLogger(settings.LOGGER_NAME)
 MIN_SIZE = 500
 MAX_SIZE = 15000
 STEP_SIZE = 500
-NUM_RUNS = 2
+NUM_RUNS = 21
 
 dataset = Covertype_Sklearn()
 
