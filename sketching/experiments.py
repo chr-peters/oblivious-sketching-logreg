@@ -4,6 +4,7 @@ from time import perf_counter
 
 import numpy as np
 import pandas as pd
+from joblib import Parallel, delayed
 from sklearn.linear_model import SGDClassifier
 
 from . import optimizer, settings
@@ -55,7 +56,7 @@ class BaseExperiment(abc.ABC):
     def optimize(self, reduced_matrix, weights):
         return optimizer.optimize(Z=reduced_matrix, w=weights).x
 
-    def run(self):
+    def run(self, parallel=False, n_jobs=4):
         Z = self.dataset.get_Z()
         beta_opt = self.dataset.get_beta_opt()
         objective_function = optimizer.get_objective_function(Z)
@@ -63,8 +64,7 @@ class BaseExperiment(abc.ABC):
 
         logger.info("Running experiments...")
 
-        results = []
-        for cur_config in self.get_config_grid():
+        def job_function(cur_config):
             logger.info(f"Current experimental config: {cur_config}")
 
             start_time = perf_counter()
@@ -76,14 +76,22 @@ class BaseExperiment(abc.ABC):
             total_time = perf_counter() - start_time
 
             cur_ratio = objective_function(cur_beta_opt) / f_opt
-            results.append(
-                {
-                    **cur_config,
-                    "ratio": cur_ratio,
-                    "sampling_time_s": sampling_time,
-                    "total_time_s": total_time,
-                }
+            return {
+                **cur_config,
+                "ratio": cur_ratio,
+                "sampling_time_s": sampling_time,
+                "total_time_s": total_time,
+            }
+
+        if parallel:
+            results = Parallel(n_jobs=n_jobs)(
+                delayed(job_function)(cur_config)
+                for cur_config in self.get_config_grid()
             )
+        else:
+            results = [
+                job_function(cur_config) for cur_config in self.get_config_grid()
+            ]
 
         logger.info(f"Writing results to {self.results_filename}")
 
@@ -125,6 +133,10 @@ class UniformSamplingExperiment(BaseExperiment):
 
 
 class ObliviousSketchingExperiment(BaseExperiment):
+    """
+    WARNING: This implementation is not thread safe!!!
+    """
+
     def __init__(
         self,
         dataset: Dataset,

@@ -156,6 +156,35 @@ def test_l2s_experiment(tmp_path):
     assert np.all(df["total_time_s"] > 0)
 
 
+def test_l2s_experiment_parallel(tmp_path):
+    dataset = ExampleDataset()
+    results_filename = tmp_path / "results.csv"
+    experiment = L2SExperiment(
+        dataset,
+        results_filename=results_filename,
+        min_size=1,
+        max_size=5,
+        step_size=2,
+        num_runs=3,
+    )
+    experiment.run(parallel=True)
+
+    df = pd.read_csv(results_filename)
+
+    run_unique, run_counts = np.unique(df["run"], return_counts=True)
+    assert_array_equal(run_unique, [1, 2, 3])
+    assert_array_equal(run_counts, [3, 3, 3])
+
+    assert np.sum(df["ratio"].isna()) == 0
+    assert np.all(df["ratio"] >= 1)
+
+    assert np.sum(df["sampling_time_s"].isna()) == 0
+    assert np.sum(df["total_time_s"].isna()) == 0
+
+    assert np.all(df["sampling_time_s"] > 0)
+    assert np.all(df["total_time_s"] > 0)
+
+
 def test_l2s_reduction(tmp_path):
     dataset = ExampleDataset()
     results_filename = tmp_path / "results.csv"
