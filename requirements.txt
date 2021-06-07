@@ -5,7 +5,9 @@
 #    pip-compile
 #
 joblib==1.0.1
-    # via scikit-learn
+    # via
+    #   oblivious-sketching-logreg (setup.py)
+    #   scikit-learn
 llvmlite==0.36.0
     # via numba
 numba==0.53.1
