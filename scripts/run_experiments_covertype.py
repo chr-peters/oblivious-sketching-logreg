@@ -1,11 +1,5 @@
-import logging
-
-from sketching import settings
 from sketching.datasets import Covertype_Sklearn
 from sketching.utils import run_experiments
-
-logger = logging.getLogger(settings.LOGGER_NAME)
-
 
 MIN_SIZE = 500
 MAX_SIZE = 15000
