@@ -7,4 +7,6 @@ DATA_DIR = BASE_DIR / ".data-cache"
 
 RESULTS_DIR = BASE_DIR / "experimental-results"
 
+PLOTS_DIR = BASE_DIR / "plots"
+
 LOGGER_NAME = "sketching"
