@@ -175,6 +175,12 @@ class NoisyDataset(Dataset):
         X, y = self.dataset.get_X(), self.dataset.get_y()
 
         subset_size = int(X.shape[0] * self.percentage)
+
+        logger.info(
+            f"Augmenting {subset_size} rows of the dataset "
+            f"with std={self.std} gaussian noise..."
+        )
+
         indices = _rng.choice(X.shape[0], size=subset_size, replace=False)
         X[indices] += _rng.normal(loc=0, scale=self.std, size=(subset_size, X.shape[1]))
 
