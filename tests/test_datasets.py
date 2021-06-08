@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from sketching.datasets import Dataset
+from sketching.datasets import Dataset, NoisyDataset
 
 X = np.array([[1, 0], [0.1, 1], [-0.1, 1], [-1, 0], [0, -1]])
 y = np.array([1, -1, -1, 1, -1])
@@ -49,3 +49,20 @@ def test_abstract_dataset_caching(tmp_path):
         assert_array_almost_equal(dataset.get_beta_opt(), beta_opt, decimal=4)
         assert dataset.get_n() == 5
         assert dataset.get_d() == 2
+
+
+def test_noisy_dataset():
+    dataset = ExampleDataset(use_caching=False)
+    noisy_dataset = NoisyDataset(dataset=dataset, percentage=0.4, std=100)
+
+    assert noisy_dataset.get_name() == "example_name_noisy"
+    assert dataset.get_n() == 5
+    assert dataset.get_d() == 2
+    assert dataset.get_Z().shape[0] == 5
+    assert dataset.get_Z().shape[1] == 3
+
+    # make sure that exactly 40% of the rows (2 rows) are affected by noise
+    Z_original = dataset.get_Z()
+    Z_noisy = noisy_dataset.get_Z()
+
+    assert np.sum(np.all(np.equal(Z_original, Z_noisy), axis=1)) == 3

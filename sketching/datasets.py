@@ -15,6 +15,8 @@ from . import optimizer, settings
 
 logger = logging.getLogger(settings.LOGGER_NAME)
 
+_rng = np.random.default_rng()
+
 
 def make_Z(X, y):
     # add intercept to X
@@ -24,13 +26,6 @@ def make_Z(X, y):
     Z = np.multiply(X_intercept, y[:, np.newaxis])
 
     return Z
-
-
-def add_distortion(dataset, percentage=0.0001, std=1e4):
-    """
-    This method can be used to add heavy hitters to a dataset.
-    """
-    pass
 
 
 class Dataset(abc.ABC):
@@ -146,6 +141,44 @@ class Dataset(abc.ABC):
             self.beta_opt = self._get_beta_opt_cached()
 
         return self.beta_opt
+
+
+class NoisyDataset(Dataset):
+    """
+    This is a decorator class that adds gaussian noise to a subset of the rows
+    of an existing dataset.
+
+    Parameters
+    ----------
+    dataset : Dataset
+        The dataset instance that will be augmented with noise.
+
+    percentage : float
+        Percentage of the dataset that will be augmented.
+        Setting percentage=0.1 means that 10% of the rows in the dataset will be
+        affected.
+
+    std : float
+        Standard deviation of the noise.
+    """
+
+    def __init__(self, dataset: Dataset, percentage, std):
+        super().__init__(use_caching=False)
+        self.dataset = dataset
+        self.percentage = percentage
+        self.std = std
+
+    def get_name(self):
+        return self.dataset.get_name() + "_noisy"
+
+    def load_X_y(self):
+        X, y = self.dataset.get_X(), self.dataset.get_y()
+
+        subset_size = int(X.shape[0] * self.percentage)
+        indices = _rng.choice(X.shape[0], size=subset_size, replace=False)
+        X[indices] += _rng.normal(loc=0, scale=self.std, size=(subset_size, X.shape[1]))
+
+        return X, y
 
 
 class Covertype_Sklearn(Dataset):
